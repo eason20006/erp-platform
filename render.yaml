@@ -1,0 +1,10 @@
+# Render 部署配置文件（可选）
+services:
+  - type: web
+    name: erp-platform
+    env: python
+    buildCommand: pip install -r erp_platform/requirements.txt
+    startCommand: gunicorn -c gunicorn_config.py wsgi:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0

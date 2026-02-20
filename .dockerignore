@@ -1,0 +1,24 @@
+# Docker 忽略文件
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+*.db
+*.sqlite
+.DS_Store
+*.log
+.git/
+.gitignore
+README*.md
+*.md
+!README_ERP.md
+01/
+02/
+03/
+04/
+05/

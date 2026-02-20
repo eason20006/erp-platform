@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ERP管理平台 - 首页</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: "Microsoft YaHei", sans-serif; margin: 0; background: #f0f2f5; }
+    .nav { background: #1a1a2e; color: #fff; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; }
+    .nav a { color: #fff; text-decoration: none; margin-right: 16px; }
+    .nav a:hover { color: #4a9eff; }
+    .main { padding: 24px; max-width: 1200px; margin: 0 auto; }
+    h1 { margin: 0 0 24px; font-size: 24px; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+    .card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .card h3 { margin: 0 0 8px; font-size: 16px; color: #333; }
+    .card p { margin: 0; color: #666; font-size: 14px; }
+    #userInfo { font-size: 14px; color: #ccc; }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div>
+      <a href="/dashboard" id="navDashboard">首页</a>
+      <a href="/products" id="navProducts">商品管理</a>
+      <a href="/orders" id="navOrders">订单管理</a>
+    </div>
+    <div id="userInfo"></div>
+    <a href="/logout" id="logoutLink">退出</a>
+  </nav>
+  <main class="main">
+    <h1 id="pageTitle">工作台</h1>
+    <div class="cards">
+      <div class="card"><h3>功能入口</h3><p><a href="/products">商品管理</a> - 维护商品信息与库存</p></div>
+      <div class="card"><h3>订单管理</h3><p><a href="/orders">销售订单</a> - 创建与查看订单</p></div>
+    </div>
+  </main>
+  <script>
+    (function(){
+      fetch('/api/user/info', { credentials: 'same-origin' })
+        .then(r => r.json())
+        .then(d => { if (d.success) document.getElementById('userInfo').textContent = d.data.real_name + ' (' + d.data.role + ')'; })
+        .catch(() => {});
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ERP管理平台 - 订单管理</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: "Microsoft YaHei", sans-serif; margin: 0; background: #f0f2f5; }
+    .nav { background: #1a1a2e; color: #fff; padding: 12px 24px; }
+    .nav a { color: #fff; text-decoration: none; margin-right: 16px; }
+    .main { padding: 24px; max-width: 1000px; margin: 0 auto; }
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #f5f5f5; }
+    .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+    .btn-primary { background: #4a9eff; color: #fff; }
+    .btn-primary:hover { background: #3a8eef; }
+    #orderList tbody tr:hover { background: #f9f9f9; }
+    .msg { padding: 8px; margin-bottom: 12px; border-radius: 4px; }
+    .msg.error { background: #fee; color: #c00; }
+    .msg.success { background: #efe; color: #060; }
+    .filter { margin-bottom: 16px; }
+    .filter select { padding: 8px; margin-right: 8px; }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a href="/dashboard">首页</a>
+    <a href="/products">商品管理</a>
+    <a href="/orders">订单管理</a>
+    <a href="/logout">退出</a>
+  </nav>
+  <main class="main">
+    <h1 id="pageTitle">订单管理</h1>
+    <div class="filter">
+      <label>状态筛选：</label>
+      <select id="statusFilter">
+        <option value="">全部</option>
+        <option value="pending">待确认</option>
+        <option value="confirmed">已确认</option>
+        <option value="shipped">已发货</option>
+        <option value="completed">已完成</option>
+        <option value="cancelled">已取消</option>
+      </select>
+      <button type="button" class="btn btn-primary" id="btnQuery">查询</button>
+      <button type="button" class="btn btn-primary" id="addOrderBtn">新建订单</button>
+    </div>
+    <div id="message" class="msg" style="display:none;"></div>
+    <table id="orderTable">
+      <thead>
+        <tr>
+          <th>订单号</th>
+          <th>客户名称</th>
+          <th>订单金额</th>
+          <th>状态</th>
+          <th>创建时间</th>
+        </tr>
+      </thead>
+      <tbody id="orderList"></tbody>
+    </table>
+  </main>
+  <script>
+    function showMsg(text, isError) {
+      var el = document.getElementById('message');
+      el.textContent = text;
+      el.className = 'msg ' + (isError ? 'error' : 'success');
+      el.style.display = 'block';
+      setTimeout(function(){ el.style.display = 'none'; }, 3000);
+    }
+    function loadOrders() {
+      var status = document.getElementById('statusFilter').value;
+      var url = '/api/orders' + (status ? '?status=' + encodeURIComponent(status) : '');
+      fetch(url, { credentials: 'same-origin' })
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          var tbody = document.getElementById('orderList');
+          tbody.innerHTML = '';
+          if (!d.success) { showMsg(d.message || '加载失败', true); return; }
+          (d.data || []).forEach(function(o){
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + (o.order_no || '') + '</td><td>' + (o.customer_name || '') + '</td><td>' + (o.total_amount != null ? o.total_amount : '-') + '</td><td>' + (o.status || '') + '</td><td>' + (o.created_at || '-') + '</td>';
+            tbody.appendChild(tr);
+          });
+        })
+        .catch(function(){ showMsg('网络错误', true); });
+    }
+    document.getElementById('btnQuery').onclick = loadOrders;
+    document.getElementById('addOrderBtn').onclick = function(){
+      var customer = prompt('客户名称：');
+      if (!customer || !customer.trim()) return;
+      fetch('/api/products', { credentials: 'same-origin' })
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          if (!d.success || !d.data || !d.data.length) { showMsg('请先维护商品', true); return; }
+          var productId = d.data[0].id;
+          var qty = prompt('数量（默认1）：', '1');
+          if (qty === null) return;
+          qty = parseInt(qty, 10) || 1;
+          fetch('/api/orders', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ customer_name: customer.trim(), items: [ { product_id: productId, quantity: qty } ] })
+          })
+            .then(function(r){ return r.json(); })
+            .then(function(res){ showMsg(res.message || (res.success ? '创建成功' : '失败'), !res.success); if (res.success) loadOrders(); })
+            .catch(function(){ showMsg('请求失败', true); });
+        });
+    };
+    document.getElementById('statusFilter').onchange = loadOrders;
+    loadOrders();
+  </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.db
+*.sqlite
+*.log
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 部署相关（可选，如果不想提交）
+# app.log
+
+# 赛题资料目录（如果不想提交）
+# 01/
+# 02/
+# 03/
+# 04/
+# 05/
